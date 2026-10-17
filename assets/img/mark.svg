@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Lotus mark: five petals; the center petal leans slightly off-axis — every mind opens its own way. -->
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <path d="M32 52c-9-3-17-10-20-21 6 1 12 4 16 9" stroke="#EFA7BA" stroke-width="3.2"/>
+    <path d="M32 52c9-3 17-10 20-21-6 1-12 4-16 9" stroke="#EFA7BA" stroke-width="3.2"/>
+    <path d="M32 52c-6-5-10-13-9-24 4 2 7 6 8.5 10" stroke="#F4C4D0" stroke-width="3.2"/>
+    <path d="M32 52c6-5 10-13 9-24-4 2-7 6-8.5 10" stroke="#F4C4D0" stroke-width="3.2"/>
+    <path d="M32.5 50c-4-7-4.5-17 1.5-28 5 9 4.5 20-1.5 28z" fill="#EFA7BA" transform="rotate(6 33 36)"/>
+  </g>
+  <circle cx="44" cy="14" r="3.2" fill="#E3B54A"/>
+</svg>
