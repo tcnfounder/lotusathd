@@ -129,9 +129,6 @@ ready(() => {
       gsap.set(path, { strokeDasharray: len, strokeDashoffset: len });
       gsap.to(path, { strokeDashoffset: 0, ease: 'none', scrollTrigger: { trigger: '[data-journey]', start: 'top 80%', end: 'bottom 55%', scrub: true } });
     }
-    // two trainings merge into one approach
-    gsap.fromTo('.roots-merge span:nth-child(1)', { x: -80 }, { x: 0, ease: 'none', scrollTrigger: { trigger: '[data-roots]', start: 'top 85%', end: 'center 50%', scrub: true } });
-    gsap.fromTo('.roots-merge span:nth-child(2)', { x: 80 }, { x: 0, ease: 'none', scrollTrigger: { trigger: '[data-roots]', start: 'top 85%', end: 'center 50%', scrub: true } });
     // portrait parallax
     gsap.fromTo('[data-parallax]', { yPercent: -6 }, { yPercent: 6, ease: 'none', scrollTrigger: { trigger: '[data-portrait]', start: 'top bottom', end: 'bottom top', scrub: true } });
     // hero drifts away
@@ -162,16 +159,10 @@ ready(() => {
     });
   }
 
-  /* ---------------- header, progress, stem, time-left ---------------- */
+  /* ---------------- header + reading progress ---------------- */
   const header = $('[data-header]');
   const bar = $('[data-progress-bar]');
-  const stem = $('.stem');
-  const stemFill = $('[data-stem-fill]');
-  const footer = $('.site-footer');
-  const sections = $$('main > section[id]').filter((s) => s.id !== 'top');
-  const words = sections.map((s) => (s.innerText || '').split(/\s+/).filter(Boolean).length);
-  const timeEl = $('[data-time-left]');
-  let lastY = 0, lastMin = -1;
+  let lastY = 0;
   function onScroll() {
     const y = window.scrollY;
     header.classList.toggle('is-solid', y > 30);
@@ -179,32 +170,19 @@ ready(() => {
     header.classList.toggle('is-hidden', !menuOpen && y > 500 && y > lastY + 4);
     if (y < lastY - 4) header.classList.remove('is-hidden');
     lastY = y;
-    stem.classList.toggle('is-visible', y > hero.offsetHeight * 0.6);
-    stem.classList.toggle('is-footer', y + window.innerHeight > footer.offsetTop + 120);
     const max = document.documentElement.scrollHeight - window.innerHeight;
-    const p = max > 0 ? Math.min(1, y / max) : 0;
-    bar.style.transform = `scaleX(${p})`;
-    stemFill.style.transform = `scaleY(${p})`;
-    const mid = y + window.innerHeight * 0.5;
-    let rem = 0;
-    sections.forEach((s, i) => { rem += words[i] * Math.min(1, Math.max(0, (s.offsetTop + s.offsetHeight - mid) / s.offsetHeight)); });
-    const min = Math.max(0, Math.round(rem / 200));
-    if (min !== lastMin) { lastMin = min; timeEl.textContent = min < 1 ? '1 dk’dan az' : `~${min} dk`; }
+    bar.style.transform = `scaleX(${max > 0 ? Math.min(1, y / max) : 0})`;
   }
   window.addEventListener('scroll', onScroll, { passive: true });
 
-  const stemLinks = $$('[data-stem-link]');
   const navLinks = $$('.nav a[href^="#"]');
-  const order = stemLinks.map((a) => a.dataset.stemLink);
   const so = new IntersectionObserver((entries) => {
     entries.forEach((e) => {
       if (!e.isIntersecting) return;
-      const idx = order.indexOf(e.target.id);
-      stemLinks.forEach((a, i) => { a.classList.toggle('is-active', i === idx); a.classList.toggle('is-passed', i < idx); });
       navLinks.forEach((a) => a.setAttribute('aria-current', a.getAttribute('href') === `#${e.target.id}` ? 'true' : 'false'));
     });
   }, { rootMargin: '-45% 0px -50% 0px' });
-  order.forEach((id) => { const s = document.getElementById(id); if (s) so.observe(s); });
+  navLinks.forEach((a) => { const s = document.querySelector(a.getAttribute('href')); if (s) so.observe(s); });
 
   /* ---------------- calm mode ---------------- */
   const calmBtn = $('[data-calm-toggle]');
@@ -281,13 +259,15 @@ ready(() => {
 
   /* ---------------- service links pre-select the form ---------------- */
   const serviceSel = $('#f-service');
-  $$('[data-service]').forEach((a) => a.addEventListener('click', () => {
+  if (serviceSel) $$('[data-service]').forEach((a) => a.addEventListener('click', () => {
     serviceSel.value = a.dataset.service;
     serviceSel.dispatchEvent(new Event('change', { bubbles: true }));
   }));
 
   /* ---------------- booking form ---------------- */
   const form = $('[data-form]');
+  if (form) setupForm(form);
+  function setupForm(form) {
   const required = $$('.field [required]', form);
   const consent = $('.consent input', form);
   const formBar = $('[data-form-bar]');
@@ -358,6 +338,7 @@ ready(() => {
     }
   });
   progress();
+  }
 
   const yearEl = $('[data-year]');
   if (yearEl) yearEl.textContent = new Date().getFullYear();

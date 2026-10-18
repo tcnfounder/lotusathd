@@ -12,25 +12,22 @@ Logodaki fikir sayfanın her yerinde: **mor zihin, yeşil lotusun içinde.** Her
 | Detay | ADHD için anlamı |
 | --- | --- |
 | Hero arka planı imleç hareket ettikçe dalgalanır; imleç durunca durulur, ışık toplanır | "Durulunca her şey daha net" |
-| Sağdaki yolculuk navigasyonu ve "~N dk okuma kaldı" | Zaman körlüğüne destek, doğrusal olmayan gezinme |
 | **Sakin mod** | Tüm hareketi ve otomatik videoyu durdurur; tercih hatırlanır, sistemin "hareketi azalt" ayarına uyar |
-| SSS'de önce kısa cevap, Hakkımda'da "Hikâyenin devamı" | Bilgiyi parçalara bölme |
-| Formda "3/5 zorunlu alan doldu" ilerleme çubuğu ve anlık onay işaretleri | Küçük, görünür ilerleme (dopamin) |
+| Hakkımda'da "Hikâyenin devamı" | Bilgiyi parçalara bölme |
 | Çamur → Su → Çiçek yolu okudukça çizilir | Koçluk yolculuğu |
 | Gövde metni Atkinson Hyperlegible Next | Okunabilirlik odaklı yazı tipi |
 
-## Randevu formu
+## Sayfa akışı
 
-Form [FormSubmit](https://formsubmit.co) ile doğrudan `murvet@lotusadhdcoaching.com` adresine gider.
-**İlk gönderimde bu adrese bir onay e-postası gelir; bir kez "Activate" tıklanması gerekir.**
-Başka bir servis kullanmak için `index.html` içindeki formun `data-endpoint` ve `action` değerlerini değiştirmek yeterli.
+Hero (video) → konu bandı → Hakkımda (fotoğraf) → Neden lotus → footer.
+Randevu butonları WhatsApp'a gider; Videolar ve Blog orijinal sitedeki sayfalara bağlanır.
 
 ## Teknik
 
 Build adımı yok; saf HTML/CSS/JS, GitHub Pages'te doğrudan çalışır.
 
 - **OGL** (hafif WebGL): hero arka planı ve imleç akış haritası. Zayıf cihazlarda kaliteyi otomatik düşürür.
-- **GSAP + ScrollTrigger + SplitText**: satır satır başlık girişleri, okudukça aydınlanan alıntılar, kaydırmaya bağlı çizimler, kayan konu bandı (hızı kaydırmaya göre değişir), sayaçlar, eğilen kartlar, manyetik butonlar.
+- **GSAP + ScrollTrigger + SplitText**: satır satır başlık girişleri, okudukça aydınlanan alıntılar, kaydırmaya bağlı çizimler, kayan konu bandı (hızı kaydırmaya göre değişir), sayaç, manyetik butonlar.
 - Fontlar (Bricolage Grotesque, Atkinson Hyperlegible Next) Türkçe karakterlere göre alt kümelenmiş ve yerelde barındırılıyor; Google Fonts çağrısı yok (KVKK/GDPR dostu).
 - Erişilebilirlik: klavye ile gezinme, görünür odak, ARIA sekmeleri, `prefers-reduced-motion`.
 
