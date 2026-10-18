@@ -133,7 +133,6 @@ p { text-wrap: pretty; }
 .nav a::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--leaf); border-radius: 2px; transform: scaleX(0); transform-origin: right; transition: transform .45s var(--ease); }
 .nav a:hover, .nav a[aria-current="true"] { opacity: 1; }
 .nav a:hover::after, .nav a[aria-current="true"]::after { transform: scaleX(1); transform-origin: left; }
-.nav .lang { font-weight: 700; opacity: .55; }
 
 .header-actions { display: flex; align-items: center; gap: .7rem; }
 .calm-toggle {
@@ -192,7 +191,8 @@ p { text-wrap: pretty; }
   background: radial-gradient(80% 60% at 80% 20%, var(--lilac-2), transparent 70%), var(--lilac);
   padding-top: calc(var(--header-h) + 2rem); padding-bottom: 4rem;
 }
-.hero-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; }
+.hero-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; opacity: 0; transition: opacity 1.2s ease; }
+.hero.has-gl .hero-canvas { opacity: 1; }
 .hero-grid { display: grid; gap: 3rem; align-items: center; }
 .hero-pill {
   display: inline-flex; align-items: center; gap: .6rem; padding: .45rem .9rem .45rem .7rem; border-radius: 999px;
@@ -630,6 +630,84 @@ html[data-calm] .footer-big .word, html:not(.js) .footer-big .word { opacity: 1;
 @media (min-width: 900px) { .footer-grid { grid-template-columns: 2fr 1fr 1fr; gap: 4rem; } .footer-cta { grid-template-columns: 1fr auto; align-items: end; } }
 
 /* =========================================================
+   LOADER: a lotus draws itself, the mind appears, a breath, then the page opens
+   ========================================================= */
+.loader { display: none; }
+html.js .loader {
+  position: fixed; inset: 0; z-index: 300; display: grid; place-items: center;
+  background: radial-gradient(60% 50% at 50% 42%, #FFFFFF 0%, var(--lilac) 55%, var(--lilac-2) 100%);
+  clip-path: inset(0 0 0 0 round 0 0 0 0);
+  transition: clip-path 1.1s cubic-bezier(.76, 0, .24, 1);
+}
+html.js .loader.is-out { clip-path: inset(0 0 100% 0 round 0 0 50% 50%); pointer-events: none; }
+html.is-loading body { overflow: hidden; }
+html.is-loading main *, html.is-loading .site-header * { animation-play-state: paused !important; }
+.loader-inner { display: grid; justify-items: center; gap: 1.1rem; transition: transform 1.1s cubic-bezier(.76, 0, .24, 1), opacity .6s; }
+.loader.is-out .loader-inner { transform: translateY(-14vh) scale(.9); opacity: 0; }
+.loader-mark { width: clamp(170px, 32vw, 260px); overflow: visible; }
+.ld-leaves path, .ld-brain path { stroke-dasharray: 1; stroke-dashoffset: 1; }
+.ld-leaves path { animation: ld-draw 1.1s cubic-bezier(.65, 0, .35, 1) forwards; animation-delay: calc(.15s + (var(--o) - 2) * .14s); }
+.ld-brain path { fill-opacity: 0; animation: ld-draw .9s cubic-bezier(.65, 0, .35, 1) forwards, ld-fill .5s ease forwards; animation-delay: .8s, 1.4s; }
+.ld-brain path:nth-child(3), .ld-brain path:nth-child(4) { animation-delay: 1.15s, 1.4s; }
+.ld-brain { transform-box: fill-box; transform-origin: 50% 60%; animation: ld-pulse 1.4s ease-in-out 1.6s infinite; }
+@keyframes ld-draw { to { stroke-dashoffset: 0; } }
+@keyframes ld-fill { to { fill-opacity: 1; } }
+@keyframes ld-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+.loader-word { display: grid; justify-items: center; line-height: 1; font-family: var(--font-display); opacity: 0; animation: rise .9s var(--ease) 1.1s forwards; }
+.loader-word b { font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.3rem); font-weight: 700; letter-spacing: .04em; color: var(--violet); font-stretch: 100%; }
+.loader-word span { margin-top: .4rem; font-size: .85rem; font-weight: 600; letter-spacing: .5em; padding-left: .5em; color: var(--leaf-text); }
+.loader-breath { display: flex; align-items: center; gap: .6rem; font-size: var(--t-s); color: var(--ink-soft); opacity: 0; animation: rise .8s var(--ease) 1.3s forwards; }
+.breath-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--leaf); box-shadow: 0 0 0 0 rgba(40, 152, 58, .35); animation: breathe 4s ease-in-out infinite; }
+@keyframes breathe { 0%, 100% { transform: scale(.7); box-shadow: 0 0 0 0 rgba(40, 152, 58, .35); } 50% { transform: scale(1.25); box-shadow: 0 0 0 10px rgba(40, 152, 58, 0); } }
+.breath-txt { display: grid; }
+.breath-txt > span { grid-area: 1 / 1; animation: b-swap 4s ease-in-out infinite; }
+.breath-txt .b-out { animation-delay: -2s; }
+@keyframes b-swap { 0%, 45% { opacity: 1; } 50%, 95% { opacity: 0; } 100% { opacity: 1; } }
+.loader-foot { position: absolute; left: var(--gutter); right: var(--gutter); bottom: 1.6rem; display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem; }
+.loader-pct { font-family: var(--font-display); font-size: clamp(2.5rem, 1.8rem + 3vw, 4.5rem); font-weight: 650; letter-spacing: -0.04em; line-height: .8; color: var(--violet-deep); font-variant-numeric: tabular-nums; }
+.loader-pct small { font-size: .4em; color: var(--leaf); margin-left: .1em; }
+.loader-tag { font-size: var(--t-xs); color: var(--ink-soft); text-align: right; }
+.loader-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: var(--lilac-3); }
+.loader-bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--violet), var(--leaf)); transform: scaleX(0); transform-origin: 0 50%; }
+/* repeat visit in the same session: skip the drawing, keep the breath */
+.loader.is-quick .ld-leaves path, .loader.is-quick .ld-brain path { animation-duration: .5s; animation-delay: 0s; }
+.loader.is-quick .loader-word, .loader.is-quick .loader-breath { animation-delay: .1s; }
+@media (max-width: 640px) { .loader-tag { display: none; } }
+
+/* =========================================================
+   LANGUAGE SWITCH: a coin that flips from the Turkish to the British flag
+   ========================================================= */
+.lang-switch {
+  position: relative; display: inline-flex; align-items: center; gap: .5rem; height: 44px; padding: 0 .85rem 0 .45rem; border-radius: 999px;
+  background: var(--white); box-shadow: inset 0 0 0 1.5px var(--lilac-3); text-decoration: none; color: var(--violet-deep); font-weight: 700; font-size: var(--t-xs);
+  transition: box-shadow .3s;
+}
+.lang-switch:hover { box-shadow: inset 0 0 0 1.5px var(--violet-2); }
+.flag-coin { position: relative; width: 32px; height: 32px; perspective: 400px; }
+.flag-coin::after { /* ripple on switch */
+  content: ""; position: absolute; inset: 0; border-radius: 50%; box-shadow: 0 0 0 0 rgba(1, 33, 105, .45); pointer-events: none;
+}
+.flag-inner { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform .9s cubic-bezier(.34, 1.56, .64, 1); }
+.flag { position: absolute; inset: 0; border-radius: 50%; overflow: hidden; backface-visibility: hidden; -webkit-backface-visibility: hidden; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .08), 0 2px 6px -2px rgba(0, 0, 0, .35); }
+.flag svg { width: 100%; height: 100%; }
+.flag::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: linear-gradient(135deg, rgba(255,255,255,.45), transparent 45%, rgba(0,0,0,.12)); }
+.flag-en { transform: rotateY(180deg); }
+.lang-switch:hover .flag-inner { transform: rotateY(32deg) rotateX(-6deg); }
+.lang-codes { position: relative; display: grid; height: 1.2em; overflow: hidden; line-height: 1.2; }
+.lc { grid-area: 1 / 1; transition: transform .6s var(--ease), opacity .4s; }
+.lc-en { transform: translateY(110%); opacity: 0; }
+.lang-switch.is-flipping .flag-inner { transform: rotateY(180deg); }
+.lang-switch.is-flipping .flag-coin::after { animation: coin-ripple .8s ease-out .35s; }
+.lang-switch.is-flipping .lc-tr { transform: translateY(-110%); opacity: 0; }
+.lang-switch.is-flipping .lc-en { transform: translateY(0); opacity: 1; }
+.lang-switch.is-flipping { box-shadow: inset 0 0 0 1.5px #012169; }
+@keyframes coin-ripple { from { box-shadow: 0 0 0 0 rgba(1, 33, 105, .45); } to { box-shadow: 0 0 0 14px rgba(1, 33, 105, 0); } }
+@media (max-width: 640px) {
+  .lang-switch { padding: 0; width: 44px; justify-content: center; }
+  .lang-codes { display: none; }
+}
+
+/* =========================================================
    RESPONSIVE header
    ========================================================= */
 @media (max-width: 1080px) {
@@ -647,7 +725,10 @@ html[data-calm] .footer-big .word, html:not(.js) .footer-big .word { opacity: 1;
 @media (max-width: 640px) {
   :root { --header-h: 64px; }
   .brand-name b { font-size: .95rem; }
-  .header-inner { gap: .75rem; }
+  .header-inner { gap: .5rem; }
+  .header-actions { gap: .4rem; }
+  .calm-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .calm-toggle { padding: 0 .6rem; }
   .header-actions .btn-sm { display: none; }
   .brand-name span { display: none; }
   .calm-toggle { padding: 0 .7rem 0 .55rem; gap: .4rem; }

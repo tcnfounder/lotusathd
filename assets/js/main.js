@@ -21,13 +21,19 @@ ready(() => {
     gsap.ticker.lagSmoothing(0); // progress by real time even on slow devices, so text never stays hidden
   }
   const motion = () => hasGsap && !isCalm();
+  const loaderDone = window.__lotusLoader || Promise.resolve();
 
   /* ---------------- hero backdrop ---------------- */
   const hero = $('.hero');
-  const aurora = createAurora($('[data-aurora]'), hero, {
-    calm: isCalm(),
-    onStill: (s) => hero.classList.toggle('is-still', s),
-  });
+  // start the GPU work only after the loader, so the loader never stutters
+  let aurora = null;
+  loaderDone.then(() => requestAnimationFrame(() => {
+    aurora = createAurora($('[data-aurora]'), hero, {
+      calm: isCalm(),
+      onStill: (s) => hero.classList.toggle('is-still', s),
+    });
+    if (aurora) hero.classList.add('has-gl');
+  }));
 
   /* ---------------- hero video ---------------- */
   const heroFig = $('[data-hero-video]');
@@ -58,9 +64,14 @@ ready(() => {
     splits.forEach(({ el, s }) => {
       if (!motion()) return;
       const isHero = el.classList.contains('hero-title');
+      if (isHero) {
+        gsap.set(s.lines, { yPercent: 110 });
+        loaderDone.then(() => gsap.to(s.lines, { yPercent: 0, duration: 1.4, ease: 'expo.out', stagger: 0.09, delay: 0.35 }));
+        return;
+      }
       gsap.from(s.lines, {
-        yPercent: 110, duration: isHero ? 1.4 : 1.1, ease: 'expo.out', stagger: 0.09, delay: isHero ? 0.25 : 0,
-        scrollTrigger: isHero ? undefined : { trigger: el, start: 'top 88%', once: true },
+        yPercent: 110, duration: 1.1, ease: 'expo.out', stagger: 0.09,
+        scrollTrigger: { trigger: el, start: 'top 88%', once: true },
       });
     });
   }
@@ -286,6 +297,18 @@ ready(() => {
     else heroVideo.play().catch(() => {});
     if (on && hasGsap) gsap.globalTimeline.getChildren(true, true, false).forEach((t) => { if (t.scrollTrigger) t.progress(1); });
   });
+
+  /* ---------------- language switch: flip the coin, then go ---------------- */
+  const lang = $('[data-lang]');
+  if (lang) {
+    lang.addEventListener('click', (e) => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return;
+      e.preventDefault();
+      lang.classList.add('is-flipping');
+      setTimeout(() => { window.location.href = lang.href; }, isCalm() ? 0 : 850);
+    });
+    window.addEventListener('pageshow', (e) => { if (e.persisted) lang.classList.remove('is-flipping'); });
+  }
 
   /* ---------------- mobile menu ---------------- */
   const menuBtn = $('[data-menu-btn]');

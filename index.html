@@ -51,6 +51,68 @@
   </script>
 </head>
 <body>
+  <!-- ================= LOADER ================= -->
+  <div class="loader" id="loader" aria-hidden="true">
+    <div class="loader-inner">
+      <svg class="loader-mark" viewBox="-150 -158 300 168">
+        <g class="ld-leaves" fill="none" stroke="#28983A" stroke-width="7" stroke-linejoin="round">
+          <path pathLength="1" d="M0 0 C -46 -62 -50 -170 0 -260 C 50 -170 46 -62 0 0 Z" transform="rotate(-80) scale(.4)" style="--o:5"/>
+          <path pathLength="1" d="M0 0 C -46 -62 -50 -170 0 -260 C 50 -170 46 -62 0 0 Z" transform="rotate(80) scale(.4)" style="--o:5"/>
+          <path pathLength="1" d="M0 0 C -46 -62 -50 -170 0 -260 C 50 -170 46 -62 0 0 Z" transform="rotate(-56) scale(.46)" style="--o:4"/>
+          <path pathLength="1" d="M0 0 C -46 -62 -50 -170 0 -260 C 50 -170 46 -62 0 0 Z" transform="rotate(56) scale(.46)" style="--o:4"/>
+          <path pathLength="1" d="M0 0 C -46 -62 -50 -170 0 -260 C 50 -170 46 -62 0 0 Z" transform="rotate(-30) scale(.52)" style="--o:3"/>
+          <path pathLength="1" d="M0 0 C -46 -62 -50 -170 0 -260 C 50 -170 46 -62 0 0 Z" transform="rotate(30) scale(.52)" style="--o:3"/>
+          <path pathLength="1" d="M0 0 C -46 -62 -50 -170 0 -260 C 50 -170 46 -62 0 0 Z" transform="scale(.57)" style="--o:2"/>
+        </g>
+        <g class="ld-brain" fill="#FFFFFF" stroke="#4F2A97" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+          <path pathLength="1" d="M-3 -100 C -20 -106 -38 -96 -40 -78 C -50 -70 -48 -50 -36 -44 C -33 -32 -18 -28 -3 -34 Z"/>
+          <path pathLength="1" d="M3 -100 C 20 -106 38 -96 40 -78 C 50 -70 48 -50 36 -44 C 33 -32 18 -28 3 -34 Z"/>
+          <path pathLength="1" fill="none" d="M-4 -86 C -14 -88 -20 -80 -28 -80 M-4 -64 C -16 -66 -20 -56 -32 -58 M-18 -80 C -16 -72 -22 -68 -26 -66"/>
+          <path pathLength="1" fill="none" d="M4 -86 C 14 -88 20 -80 28 -80 M4 -64 C 16 -66 20 -56 32 -58 M18 -80 C 16 -72 22 -68 26 -66"/>
+        </g>
+      </svg>
+      <p class="loader-word"><b>Lotus ADHD</b><span lang="en">COACHING</span></p>
+      <p class="loader-breath"><span class="breath-dot"></span><span class="breath-txt"><span class="b-in">Nefes al</span><span class="b-out">Nefes ver</span></span></p>
+    </div>
+    <div class="loader-foot">
+      <span class="loader-pct"><span data-pct>0</span><small>%</small></span>
+      <span class="loader-tag">Kendini keşfet, hayatını yönet</span>
+    </div>
+    <span class="loader-bar"><i data-bar></i></span>
+  </div>
+  <script>
+    (function () {
+      var html = document.documentElement, L = document.getElementById('loader');
+      var calm = html.hasAttribute('data-calm'), seen = false;
+      try { seen = sessionStorage.getItem('lotus-seen') === '1'; sessionStorage.setItem('lotus-seen', '1'); } catch (e) {}
+      var minT = calm ? 250 : (seen ? 800 : 2300);
+      if (seen) L.classList.add('is-quick');
+      html.classList.add('is-loading');
+      var pct = L.querySelector('[data-pct]'), bar = L.querySelector('[data-bar]');
+      var ready = false, finished = false, start = performance.now(), resolveDone;
+      window.__lotusLoader = new Promise(function (r) { resolveDone = r; });
+      var fontsP = document.fonts ? document.fonts.ready : Promise.resolve();
+      fontsP.then(function () { ready = true; });
+      setTimeout(function () { ready = true; }, 4500);
+      function finish() {
+        if (finished) return; finished = true;
+        L.classList.add('is-out');
+        html.classList.remove('is-loading');
+        resolveDone();
+        setTimeout(function () { L.remove(); }, 1200);
+      }
+      function tick(now) {
+        var t = Math.min(1, (now - start) / minT);
+        var p = Math.min(1 - Math.pow(1 - t, 3), ready ? 1 : 0.92);
+        pct.textContent = Math.round(p * 100);
+        bar.style.transform = 'scaleX(' + p + ')';
+        if (p >= 1) setTimeout(finish, calm ? 0 : 250); else requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+      setTimeout(finish, 6000);
+    })();
+  </script>
+
   <a class="skip" href="#icerik">İçeriğe geç</a>
 
   <!-- ================= HEADER ================= -->
@@ -66,7 +128,6 @@
         <a href="#neden-lotus">Neden lotus</a>
         <a href="https://www.lotusadhdcoaching.com/videolar/">Videolar</a>
         <a href="https://www.lotusadhdcoaching.com/blog/">Blog</a>
-        <a class="lang" href="https://www.lotusadhdcoaching.com/en/" hreflang="en" lang="en">EN</a>
       </nav>
 
       <div class="header-actions">
@@ -79,6 +140,10 @@
           <span class="sr">Menüyü aç</span>
           <span class="menu-lines" aria-hidden="true"></span>
         </button>
+        <a class="lang-switch" href="https://www.lotusadhdcoaching.com/en/" hreflang="en" data-lang aria-label="Türkçe. Switch to English">
+          <span class="flag-coin" aria-hidden="true"><span class="flag-inner"><span class="flag flag-tr"><svg viewBox="0 0 30 30"><rect width="30" height="30" fill="#E30A17"/><circle cx="12" cy="15" r="7.5" fill="#fff"/><circle cx="13.9" cy="15" r="6" fill="#E30A17"/><polygon transform="translate(.9 0)" fill="#fff" points="16.30,15.00 18.53,14.22 18.58,11.86 20.01,13.74 22.27,13.06 20.92,15.00 22.27,16.94 20.01,16.26 18.58,18.14 18.53,15.78"/></svg></span><span class="flag flag-en"><svg viewBox="15 0 30 30"><clipPath id="ukT"><path d="M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z"/></clipPath><rect x="0" y="0" width="60" height="30" fill="#012169"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/><path d="M0,0 L60,30 M60,0 L0,30" clip-path="url(#ukT)" stroke="#C8102E" stroke-width="4"/><path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10"/><path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="6"/></svg></span></span></span>
+          <span class="lang-codes" aria-hidden="true"><span class="lc lc-tr">TR</span><span class="lc lc-en">EN</span></span>
+        </a>
       </div>
     </div>
     <div class="read-progress" aria-hidden="true"><span data-progress-bar></span></div>

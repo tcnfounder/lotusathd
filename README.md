@@ -15,6 +15,8 @@ Logodaki fikir sayfanın her yerinde: **mor zihin, yeşil lotusun içinde.** Her
 | **Sakin mod** | Tüm hareketi ve otomatik videoyu durdurur; tercih hatırlanır, sistemin "hareketi azalt" ayarına uyar |
 | Hakkımda'da "Hikâyenin devamı" | Bilgiyi parçalara bölme |
 | "Neden lotus" kaydırdıkça ilerleyen bir hikâye: tohum çamurda uyanır, su durulur, ışık gelir, lotus açar ve kalbinde zihin parlar | Koçluk yolculuğu; tek seferde tek bölüm, ilerleme çubuğu |
+| Açılışta loader: lotus kendini çizer, ortasında zihin belirir, "Nefes al / Nefes ver" ritmi | Sayfaya sakin bir başlangıç; aynı oturumda tekrar açılışta kısalır |
+| En sağda dil düğmesi: Türk bayrağı paraya dönüşüp İngiliz bayrağına döner, ardından İngilizce siteye geçer | |
 | Gövde metni Atkinson Hyperlegible Next | Okunabilirlik odaklı yazı tipi |
 
 ## Sayfa akışı
