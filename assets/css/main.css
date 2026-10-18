@@ -286,10 +286,10 @@ p { text-wrap: pretty; }
 .about-grid { display: grid; gap: 3.5rem; align-items: center; }
 .portrait-wrap { position: relative; width: min(100%, 440px); margin-inline: auto; }
 .portrait {
-  position: relative; aspect-ratio: 4 / 5; border-radius: 999px 999px var(--r-l) var(--r-l); overflow: hidden;
+  position: relative; aspect-ratio: 4 / 5; border-radius: 42% 42% var(--r-l) var(--r-l) / 30% 30% var(--r-l) var(--r-l); overflow: hidden;
   background: linear-gradient(160deg, var(--lilac-2), var(--lilac-3));
 }
-.portrait img { position: absolute; inset: -8% 0; width: 100%; height: 116%; object-fit: cover; object-position: center 25%; }
+.portrait img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 0%; transform-origin: 50% 0%; }
 .portrait-fallback { position: absolute; inset: 0; display: none; place-items: center; font-family: var(--font-display); font-size: 9rem; font-weight: 700; color: var(--violet); opacity: .25; }
 .portrait.is-missing img { display: none; }
 .portrait.is-missing .portrait-fallback { display: grid; }

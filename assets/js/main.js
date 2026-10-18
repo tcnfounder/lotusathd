@@ -134,7 +134,7 @@ ready(() => {
   /* ---------------- scroll-linked scenes ---------------- */
   if (motion()) {
     // portrait parallax
-    gsap.fromTo('[data-parallax]', { yPercent: -6 }, { yPercent: 6, ease: 'none', scrollTrigger: { trigger: '[data-portrait]', start: 'top bottom', end: 'bottom top', scrub: true } });
+    gsap.fromTo('[data-parallax]', { scale: 1.08 }, { scale: 1, ease: 'none', scrollTrigger: { trigger: '[data-portrait]', start: 'top bottom', end: 'bottom top', scrub: true } });
     // hero drifts away
     gsap.to('.hero-visual', { yPercent: 12, ease: 'none', scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true } });
     ScrollTrigger.create({ trigger: hero, start: 'top top', end: 'bottom top', onUpdate: (s) => aurora && aurora.setScroll(s.progress) });
