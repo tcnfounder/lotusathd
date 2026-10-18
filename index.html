@@ -29,6 +29,13 @@
       try { calm = localStorage.getItem('lotus-calm'); } catch (e) {}
       if (calm === null) calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? '1' : '0';
       if (calm === '1') document.documentElement.setAttribute('data-calm', '');
+      // sakin mod ayarları ilk boyamadan önce uygulanır (yazı boyutu, renk, odak)
+      try {
+        var p = JSON.parse(localStorage.getItem('lotus-calm-prefs') || '{}');
+        ['focus', 'size', 'leading', 'color', 'media'].forEach(function (k) {
+          if (typeof p[k] === 'string') document.documentElement.setAttribute('data-calm-' + k, p[k]);
+        });
+      } catch (e) {}
       document.documentElement.classList.add('js', 'split-pending');
       setTimeout(function () { document.documentElement.classList.remove('split-pending'); }, 3000);
     })();
@@ -131,7 +138,7 @@
       </nav>
 
       <div class="header-actions">
-        <button class="calm-toggle" type="button" data-calm-toggle aria-pressed="false">
+        <button class="calm-toggle" type="button" data-calm-toggle aria-pressed="false" title="ADHD dostu sakin mod: hareket durur, sayfa sadeleşir (Alt + Shift + S)">
           <span class="calm-dot" aria-hidden="true"></span>
           <span class="calm-label">Sakin mod</span>
         </button>
@@ -151,11 +158,11 @@
 
   <main id="icerik">
     <!-- ================= HERO ================= -->
-    <section class="hero" id="top" aria-labelledby="hero-title">
+    <section class="hero" id="top" aria-labelledby="hero-title" data-calm-section="Giriş">
       <canvas class="hero-canvas" data-aurora aria-hidden="true"></canvas>
 
       <div class="wrap hero-grid">
-        <div class="hero-copy">
+        <div class="hero-copy" data-calm-text>
           <p class="hero-pill" data-intro style="--i:0"><span class="pulse" aria-hidden="true"></span>ADHD (DEHB) koçluğu, online ve yüz yüze</p>
           <h1 class="hero-title" id="hero-title" data-split>Kendini keşfet, <em>hayatını yönet.</em></h1>
           <p class="hero-lede" data-intro style="--i:2">
@@ -227,7 +234,7 @@
     </div>
 
     <!-- ================= ABOUT ================= -->
-    <section class="section about" id="hakkimda" aria-labelledby="hakkimda-title">
+    <section class="section about" id="hakkimda" aria-labelledby="hakkimda-title" data-calm-section="Hakkımda">
       <div class="wrap about-grid">
         <div class="portrait-wrap" data-reveal>
           <figure class="portrait" data-portrait>
@@ -241,7 +248,7 @@
           <svg class="portrait-leaf" viewBox="-60 -270 120 280" aria-hidden="true"><use href="#leaf" fill="none" stroke="#28983A" stroke-width="6"/></svg>
         </div>
 
-        <div class="about-copy">
+        <div class="about-copy" data-calm-text>
           <h2 id="hakkimda-title" class="h-xl" data-split>Tanıyı aldığım gün, üzerimden büyük bir yük kalktı.</h2>
           <p class="lede" data-reveal>
             Merhaba, ben Mürvet. 40 yaşından sonra ADHD tanısı almış biri olarak, bu süreçte edindiğim
@@ -269,7 +276,7 @@
     </section>
 
     <!-- ================= WHY LOTUS: pinned scroll story ================= -->
-    <section class="why" id="neden-lotus" aria-labelledby="neden-title" data-story>
+    <section class="why" id="neden-lotus" aria-labelledby="neden-title" data-story data-calm-section="Neden lotus">
       <div class="story-pin" data-story-pin>
         <div class="wrap story-grid">
 
@@ -406,7 +413,7 @@
           </figure>
 
           <!-- the words -->
-          <div class="story-copy">
+          <div class="story-copy" data-calm-text>
             <h2 id="neden-title" class="story-title">Neden lotus?</h2>
 
             <ol class="chapters" data-chapters>
@@ -442,16 +449,16 @@
       </div>
     </section>
 
-    <section class="why-end" aria-label="Hedefim">
-      <div class="wrap">
+    <section class="why-end" aria-label="Hedefim" data-calm-section="Hedefim">
+      <div class="wrap" data-calm-text>
         <p class="big-quote" data-split-words>Hedefim, ADHD’li bireylerin kalplerindeki bilgeliğe ulaşarak hayatlarını daha kolay ve üretken hale getirmelerine destek olmak.</p>
       </div>
     </section>
   </main>
 
   <!-- ================= FOOTER ================= -->
-  <footer class="site-footer">
-    <div class="wrap footer-cta">
+  <footer class="site-footer" data-calm-section="İletişim">
+    <div class="wrap footer-cta" data-calm-text>
       <p class="footer-big" data-split-words>Her birey eşsizdir. Doğru destekle kendi yolunu çizmek mümkün.</p>
       <a class="btn btn-green" href="https://wa.me/18624471204" target="_blank" rel="noopener" data-magnetic>WhatsApp’tan randevu al</a>
     </div>

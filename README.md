@@ -12,7 +12,7 @@ Logodaki fikir sayfanın her yerinde: **mor zihin, yeşil lotusun içinde.** Her
 | Detay | ADHD için anlamı |
 | --- | --- |
 | Hero arka planı imleç hareket ettikçe dalgalanır; imleç durunca durulur, ışık toplanır | "Durulunca her şey daha net" |
-| **Sakin mod** | Tüm hareketi ve otomatik videoyu durdurur; tercih hatırlanır, sistemin "hareketi azalt" ayarına uyar |
+| **Sakin mod (ADHD odak modu)** | Hareket ve otomatik video durur; renkler yumuşar, koyu bloklar açılır; kayan konu şeridi sabit listeye döner; başlıklar okunaklı yazı tipine geçer; okuma odağı yalnızca okunan paragrafı net bırakır; alttaki odak çubuğu bölümü, kalan okuma süresini ve tek bir "sonraki adım"ı gösterir. Ayarlar: yazı boyutu, satır aralığı, gri tonlu renk, yalnızca metin. Tercihler hatırlanır, sistemin "hareketi azalt" ayarına uyar. Kısayol: Alt + Shift + S |
 | Hakkımda'da "Hikâyenin devamı" | Bilgiyi parçalara bölme |
 | "Neden lotus" kaydırdıkça ilerleyen bir hikâye: tohum çamurda uyanır, su durulur, ışık gelir, lotus açar ve kalbinde zihin parlar | Koçluk yolculuğu; tek seferde tek bölüm, ilerleme çubuğu |
 | Açılışta loader: lotus kendini çizer, ortasında zihin belirir, "Nefes al / Nefes ver" ritmi | Sayfaya sakin bir başlangıç; aynı oturumda tekrar açılışta kısalır |
