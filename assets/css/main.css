@@ -315,30 +315,66 @@ html:not(.js) .more-body { height: auto; }
 .pull p { font-family: var(--font-display); font-size: var(--t-l); line-height: 1.25; font-weight: 550; color: var(--violet-deep); letter-spacing: -0.015em; }
 .pull cite { display: block; margin-top: .75rem; font-style: normal; font-size: var(--t-xs); color: var(--ink-soft); }
 
-/* ---- why lotus ---- */
-.why { background: var(--lilac); overflow: hidden; }
-.journey { position: relative; }
-.journey-path { position: absolute; left: 0; right: 0; top: 18px; width: 100%; height: 120px; color: var(--glow); display: none; }
-.journey-steps { position: relative; display: grid; gap: 1rem; }
-.step { position: relative; padding: 2rem 1.75rem 2.25rem; border-radius: var(--r-l); background: var(--white); box-shadow: 0 1px 0 rgba(79, 42, 151, .06); }
-.step-n {
-  display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; margin-bottom: 1.5rem;
-  font-family: var(--font-display); font-weight: 700; font-size: 1.2rem; color: var(--white); background: var(--mud);
-  box-shadow: 0 0 0 8px var(--lilac);
+/* ---- why lotus: pinned story ---- */
+.why { position: relative; background: var(--lilac); }
+.story-pin { position: relative; min-height: 100svh; display: grid; align-items: center; padding: calc(var(--header-h) + 1.5rem) 0 3rem; overflow: hidden; }
+.story-grid { display: grid; gap: 2.5rem; align-items: center; }
+@media (min-width: 960px) { .story-grid { grid-template-columns: 1fr 1fr; gap: 5rem; } }
+
+.scene { position: relative; width: min(100%, 460px); margin-inline: auto; aspect-ratio: 400 / 520; border-radius: 999px 999px var(--r-l) var(--r-l); overflow: hidden; box-shadow: 0 50px 90px -45px rgba(36, 16, 79, .65), 0 0 0 8px var(--white); isolation: isolate; }
+.scene-svg { width: 100%; height: 100%; }
+.scene-caption {
+  position: absolute; left: 50%; bottom: 1.1rem; transform: translateX(-50%); padding: .4rem 1rem; border-radius: 999px;
+  background: rgba(255, 255, 255, .88); color: var(--violet-deep); font-weight: 700; font-size: var(--t-xs); white-space: nowrap;
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); box-shadow: 0 8px 20px -10px rgba(0,0,0,.35);
 }
-.step-water .step-n { background: var(--violet); }
-.step-bloom .step-n { background: var(--leaf); }
-.step h3 { font-family: var(--font-display); font-size: var(--t-xl); font-weight: 650; letter-spacing: -0.02em; color: var(--violet-deep); margin-bottom: .5rem; }
-.step p { color: var(--ink-soft); }
-.step-bloom { background: linear-gradient(160deg, var(--white), var(--leaf-soft)); }
-@media (min-width: 900px) {
-  .journey-path { display: block; }
-  .journey-steps { grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
-  .step-water { margin-top: 3rem; }
-  .step-bloom { margin-top: 1rem; }
+.s-pad { transform-box: fill-box; transform-origin: center; }
+.s-flower .pt { transform-box: view-box; }
+.s-sparks path { transform-box: fill-box; transform-origin: center; }
+
+.story-title { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.035em; line-height: .95; font-stretch: 86%; color: var(--violet-deep); font-size: clamp(2.75rem, 1.6rem + 4.4vw, 5.5rem); }
+.chapters { position: relative; display: grid; margin-top: 1.75rem; }
+.chapter { grid-area: 1 / 1; }
+.ch-kicker { display: inline-flex; align-items: center; gap: .55rem; font-weight: 700; font-size: var(--t-s); color: var(--leaf-text); margin-bottom: .75rem; }
+.ch-dot { width: 12px; height: 12px; border-radius: 50%; }
+.ch-mud { background: var(--mud); } .ch-water { background: var(--violet-2); } .ch-bloom { background: var(--leaf); }
+.chapter h3 { font-family: var(--font-display); font-size: clamp(1.6rem, 1.1rem + 1.8vw, 2.4rem); font-weight: 620; letter-spacing: -0.025em; line-height: 1.08; color: var(--violet-deep); max-width: 18ch; }
+.chapter p:last-child { margin-top: 1rem; color: var(--ink-soft); max-width: 46ch; font-size: var(--t-m); }
+
+.story-progress { margin-top: 2.5rem; max-width: 26rem; }
+.sp-track { display: block; height: 4px; border-radius: 4px; background: var(--lilac-3); overflow: hidden; }
+.sp-fill { display: block; height: 100%; background: linear-gradient(90deg, var(--mud), var(--violet-2), var(--leaf)); transform-origin: 0 50%; transform: scaleX(0); }
+.sp-labels { display: flex; justify-content: space-between; margin-top: .65rem; font-size: var(--t-xs); font-weight: 700; color: var(--ink-soft); }
+.sp-labels li { opacity: .45; transition: opacity .4s, color .4s; }
+.sp-labels li.is-on { opacity: 1; color: var(--violet); }
+
+.story-hint { position: absolute; left: 50%; bottom: 1rem; transform: translateX(-50%); display: flex; align-items: center; gap: .6rem; font-size: var(--t-xs); color: var(--ink-soft); }
+.story-hint span { width: 18px; height: 28px; border-radius: 10px; box-shadow: inset 0 0 0 2px var(--lilac-3); position: relative; }
+.story-hint span::after { content: ""; position: absolute; left: 50%; top: 6px; width: 3px; height: 6px; border-radius: 2px; background: var(--violet); transform: translateX(-50%); animation: wheel 1.6s var(--ease) infinite; }
+@keyframes wheel { from { transform: translate(-50%, 0); opacity: 1; } to { transform: translate(-50%, 9px); opacity: 0; } }
+
+/* static (calm / no-js / no gsap): chapters stack, flower already open */
+.why.is-static .chapters { gap: 2rem; }
+.why.is-static .chapter { grid-area: auto; }
+.why.is-static .chapter[data-chapter="0"] { display: none; }
+.why.is-static .story-progress, .why.is-static .story-hint, .why.is-static .scene-caption { display: none; }
+.why.is-animated .chapter:not(.is-active) { visibility: hidden; }
+
+@media (max-width: 959px) {
+  .why.is-animated .story-pin { padding-top: calc(var(--header-h) + .75rem); padding-bottom: 1.25rem; align-items: start; }
+  .why.is-animated .story-grid { gap: 1.25rem; }
+  .why.is-animated .scene { width: auto; height: 44svh; max-height: 420px; }
+  .why.is-animated .story-title { font-size: 1.15rem; letter-spacing: -0.01em; color: var(--leaf-text); }
+  .why.is-animated .chapters { margin-top: .5rem; }
+  .why.is-animated .chapter h3 { font-size: 1.5rem; }
+  .why.is-animated .chapter p:last-child { font-size: var(--t-s); margin-top: .6rem; }
+  .why.is-animated .story-progress { margin-top: 1.25rem; }
+  .why.is-animated .story-hint { display: none; }
 }
+
+.why-end { background: var(--lilac); padding: clamp(3rem, 2rem + 4vw, 6rem) 0 clamp(5rem, 4rem + 4vw, 8rem); }
 .big-quote {
-  margin: clamp(4rem, 8vw, 7rem) auto 0; max-width: 24ch; text-align: center; font-size: clamp(1.75rem, 1.1rem + 2.4vw, 3rem);
+  margin: 0 auto; max-width: 24ch; text-align: center; font-size: clamp(1.75rem, 1.1rem + 2.4vw, 3rem);
   font-weight: 550; line-height: 1.12; color: var(--violet-deep);
 }
 .big-quote .word { opacity: .15; transition: opacity .2s; }

@@ -14,7 +14,7 @@ Logodaki fikir sayfanın her yerinde: **mor zihin, yeşil lotusun içinde.** Her
 | Hero arka planı imleç hareket ettikçe dalgalanır; imleç durunca durulur, ışık toplanır | "Durulunca her şey daha net" |
 | **Sakin mod** | Tüm hareketi ve otomatik videoyu durdurur; tercih hatırlanır, sistemin "hareketi azalt" ayarına uyar |
 | Hakkımda'da "Hikâyenin devamı" | Bilgiyi parçalara bölme |
-| Çamur → Su → Çiçek yolu okudukça çizilir | Koçluk yolculuğu |
+| "Neden lotus" kaydırdıkça ilerleyen bir hikâye: tohum çamurda uyanır, su durulur, ışık gelir, lotus açar ve kalbinde zihin parlar | Koçluk yolculuğu; tek seferde tek bölüm, ilerleme çubuğu |
 | Gövde metni Atkinson Hyperlegible Next | Okunabilirlik odaklı yazı tipi |
 
 ## Sayfa akışı

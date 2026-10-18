@@ -122,18 +122,106 @@ ready(() => {
 
   /* ---------------- scroll-linked scenes ---------------- */
   if (motion()) {
-    // journey path draws as you read
-    const path = $('[data-draw]');
-    if (path) {
-      const len = path.getTotalLength();
-      gsap.set(path, { strokeDasharray: len, strokeDashoffset: len });
-      gsap.to(path, { strokeDashoffset: 0, ease: 'none', scrollTrigger: { trigger: '[data-journey]', start: 'top 80%', end: 'bottom 55%', scrub: true } });
-    }
     // portrait parallax
     gsap.fromTo('[data-parallax]', { yPercent: -6 }, { yPercent: 6, ease: 'none', scrollTrigger: { trigger: '[data-portrait]', start: 'top bottom', end: 'bottom top', scrub: true } });
     // hero drifts away
     gsap.to('.hero-visual', { yPercent: 12, ease: 'none', scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true } });
     ScrollTrigger.create({ trigger: hero, start: 'top top', end: 'bottom top', onUpdate: (s) => aurora && aurora.setScroll(s.progress) });
+  }
+
+  /* ---------------- Neden lotus: pinned scroll story ---------------- */
+  const story = $('[data-story]');
+  if (story) setupStory(story);
+  function setupStory(sec) {
+    const q = (sel) => sec.querySelector(sel);
+    const qa = (sel) => [...sec.querySelectorAll(sel)];
+    const petals = qa('.s-flower .pt');
+    const chapters = qa('[data-chapter]');
+    const labels = qa('[data-sp]');
+    const caption = q('[data-scene-caption]');
+    const fill = q('[data-story-fill]');
+    const hint = q('[data-story-hint]');
+
+    if (!hasGsap) { sec.classList.add('is-static'); return; }
+
+    // the whole growth, 10 units long
+    const tl = gsap.timeline({ paused: true, defaults: { ease: 'none' } });
+    gsap.set(qa('.s-stem, .s-roots path'), { strokeDasharray: 1, strokeDashoffset: 1, opacity: 0 });
+    gsap.set(qa('.s-pad'), { scale: 0 });
+    gsap.set(petals, { svgOrigin: '0 0', scale: 0, rotation: 0 });
+    gsap.set(q('.s-glow'), { svgOrigin: '0 0', scale: .4 });
+
+    // chapter 1: mud. the seed wakes, roots reach, silt stirs
+    tl.to(q('.s-seedglow'), { opacity: 1, duration: 1.2 }, 1)
+      .to(q('.s-seed'), { scale: 1.35, svgOrigin: '200 428', duration: 1.2, ease: 'sine.inOut' }, 1)
+      .to(qa('.s-roots path'), { opacity: 1, duration: .1, stagger: .2 }, 1.3)
+      .to(qa('.s-roots path'), { strokeDashoffset: 0, duration: 1.4, stagger: .2 }, 1.3)
+      .to(qa('.s-silt circle'), { y: () => gsap.utils.random(-40, -12), x: () => gsap.utils.random(-14, 14), duration: 2.2, stagger: .04 }, 1)
+      .to(q('.s-stem'), { opacity: 1, duration: .1 }, 2.2)
+      .to(q('.s-stem'), { strokeDashoffset: .62, duration: 1.4 }, 2.2)
+
+    // chapter 2: water. the murk clears, light arrives, the stem reaches the surface
+      .to(q('.s-murk'), { opacity: 0, duration: 2.2 }, 3.5)
+      .to(qa('.s-silt circle'), { opacity: 0, y: '+=30', duration: 1.6, stagger: .03 }, 3.5)
+      .to(q('.s-bubbles'), { opacity: 1, duration: .4 }, 3.8)
+      .to(qa('.s-bubbles circle'), { y: () => gsap.utils.random(-200, -150), duration: 2.4, stagger: .12 }, 3.8)
+      .to(q('.s-bubbles'), { opacity: 0, duration: .4 }, 6)
+      .to(q('.s-sun'), { opacity: .95, duration: 1.6 }, 4)
+      .to(q('.s-rays'), { opacity: 1, duration: 1.8 }, 4.2)
+      .to(q('[data-sky-top]'), { attr: { 'stop-color': '#FBF9FF' }, duration: 2 }, 4)
+      .to(q('.s-stem'), { strokeDashoffset: 0, duration: 1.8 }, 4.4)
+      .to(qa('.s-pad'), { scale: 1, duration: 1, stagger: .3, ease: 'back.out(1.6)' }, 5.4)
+      .fromTo(qa('.s-ripples ellipse'), { attr: { rx: 20, ry: 3 }, opacity: .9 }, { attr: { rx: 120, ry: 16 }, opacity: 0, duration: 1.4, stagger: .35, immediateRender: false }, 5.6)
+
+    // chapter 3: bloom. the bud rises, petals open, the mind glows at the heart
+      .to(petals, { scale: 1, duration: 1.1, stagger: .05, ease: 'power2.out' }, 6.6)
+      .to(petals, { rotation: (i, el) => +el.dataset.open, duration: 1.6, stagger: .06, ease: 'power2.inOut' }, 7.4)
+      .to(q('.s-glow'), { opacity: 1, scale: 1, duration: 1.6 }, 7.6)
+      .to(q('.s-mind'), { opacity: 1, duration: .8 }, 8.4)
+      .to(q('.s-seedglow'), { opacity: .35, duration: 1 }, 7.6)
+      .to(q('[data-sky-bottom]'), { attr: { 'stop-color': '#E1F3E4' }, duration: 1.6 }, 7.6)
+      .to(qa('.s-sparks path'), { opacity: 1, scale: 1.4, duration: .4, stagger: .15, ease: 'power2.out' }, 8.6)
+      .to(qa('.s-sparks path'), { opacity: .5, scale: 1, duration: .5, stagger: .15 }, 9.1)
+      .to({}, { duration: .4 }, 9.6);
+
+    const total = tl.duration();
+    const cuts = [0, 1 / total, 3.5 / total, 6.6 / total];
+    const names = ['Çamur', 'Çamur', 'Su', 'Çiçek'];
+    let current = 0;
+    function show(i) {
+      if (i === current) return;
+      const prev = chapters[current], next = chapters[i], dir = i > current ? 1 : -1;
+      current = i;
+      gsap.killTweensOf([prev, next]);
+      gsap.to(prev, { autoAlpha: 0, y: -24 * dir, duration: .45, ease: 'power2.in', onComplete: () => prev.classList.remove('is-active') });
+      next.classList.add('is-active');
+      gsap.fromTo(next, { autoAlpha: 0, y: 30 * dir }, { autoAlpha: 1, y: 0, duration: .8, delay: .25, ease: 'expo.out' });
+      gsap.fromTo(next.querySelectorAll('h3, p'), { y: 18 * dir, opacity: 0 }, { y: 0, opacity: 1, duration: .8, delay: .3, stagger: .07, ease: 'expo.out' });
+      caption.textContent = names[i];
+      labels.forEach((l) => l.classList.toggle('is-on', +l.dataset.sp <= i));
+    }
+
+    if (!motion()) { sec.classList.add('is-static'); tl.progress(1); return; }
+    sec.classList.add('is-animated');
+    chapters.forEach((c, i) => gsap.set(c, { autoAlpha: i === 0 ? 1 : 0 }));
+
+    ScrollTrigger.create({
+      trigger: sec,
+      pin: q('[data-story-pin]'),
+      start: 'top top',
+      end: () => '+=' + Math.round(window.innerHeight * 3),
+      scrub: .8,
+      animation: tl,
+      anticipatePin: 1,
+      onUpdate: (self) => {
+        const p = self.progress;
+        fill.style.transform = `scaleX(${p})`;
+        let idx = 0;
+        cuts.forEach((c, i) => { if (p >= c) idx = i; });
+        show(idx);
+        if (hint) hint.style.opacity = p > .05 ? 0 : 1;
+      },
+    });
   }
 
   /* ---------------- cards: tilt + spotlight ---------------- */
