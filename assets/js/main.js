@@ -1,4 +1,5 @@
 import { createAurora } from './aurora.js';
+import { initCalm } from './calm.js';
 
 const root = document.documentElement;
 const $ = (s, el = document) => el.querySelector(s);
@@ -41,13 +42,18 @@ ready(() => {
   const soundBtn = $('[data-sound]');
   const soundLabel = $('[data-sound-label]');
   heroVideo.addEventListener('error', () => heroFig.classList.add('is-missing'));
+  // in calm mode the video waits, still, until the visitor chooses to watch it
+  const setSoundLabel = () => {
+    soundLabel.textContent = !heroVideo.muted ? 'Sesi kapat' : (isCalm() && heroVideo.paused ? 'Videoyu izle' : 'Sesi aç');
+  };
   if (isCalm()) heroVideo.pause();
+  setSoundLabel();
   soundBtn.addEventListener('click', () => {
     const on = heroVideo.muted;
     heroVideo.muted = !on;
     if (on) { heroVideo.currentTime = 0; heroVideo.play().catch(() => {}); }
     soundBtn.setAttribute('aria-pressed', String(on));
-    soundLabel.textContent = on ? 'Sesi kapat' : 'Sesi aç';
+    setSoundLabel();
     if (on) $$('[data-video] video').forEach((v) => v.pause());
   });
 
@@ -132,17 +138,25 @@ ready(() => {
   }
 
   /* ---------------- scroll-linked scenes ---------------- */
-  if (motion()) {
-    // portrait parallax
-    gsap.fromTo('[data-parallax]', { scale: 1.08 }, { scale: 1, ease: 'none', scrollTrigger: { trigger: '[data-portrait]', start: 'top bottom', end: 'bottom top', scrub: true } });
-    // hero drifts away
-    gsap.to('.hero-visual', { yPercent: 12, ease: 'none', scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true } });
+  // kept so calm mode can park them at rest and bring them back later
+  const scenes = [];
+  if (hasGsap) {
+    // portrait parallax (rest = scale 1, its end state)
+    scenes.push({ t: gsap.fromTo('[data-parallax]', { scale: 1.08 }, { scale: 1, ease: 'none', scrollTrigger: { trigger: '[data-portrait]', start: 'top bottom', end: 'bottom top', scrub: true } }), rest: 1 });
+    // hero drifts away (rest = in place, its start state)
+    scenes.push({ t: gsap.to('.hero-visual', { yPercent: 12, ease: 'none', scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true } }), rest: 0 });
     ScrollTrigger.create({ trigger: hero, start: 'top top', end: 'bottom top', onUpdate: (s) => aurora && aurora.setScroll(s.progress) });
   }
+  function setScenesCalm(on) {
+    scenes.forEach(({ t, rest }) => {
+      if (on) { t.scrollTrigger.disable(false); t.progress(rest); } else t.scrollTrigger.enable();
+    });
+  }
+  setScenesCalm(isCalm());
 
   /* ---------------- Neden lotus: pinned scroll story ---------------- */
   const story = $('[data-story]');
-  if (story) setupStory(story);
+  const storyCtl = story ? setupStory(story) : null;
   function setupStory(sec) {
     const q = (sel) => sec.querySelector(sel);
     const qa = (sel) => [...sec.querySelectorAll(sel)];
@@ -153,7 +167,7 @@ ready(() => {
     const fill = q('[data-story-fill]');
     const hint = q('[data-story-hint]');
 
-    if (!hasGsap) { sec.classList.add('is-static'); return; }
+    if (!hasGsap) { sec.classList.add('is-static'); return null; }
 
     // the whole growth, 10 units long
     const tl = gsap.timeline({ paused: true, defaults: { ease: 'none' } });
@@ -212,11 +226,42 @@ ready(() => {
       labels.forEach((l) => l.classList.toggle('is-on', +l.dataset.sp <= i));
     }
 
-    if (!motion()) { sec.classList.add('is-static'); tl.progress(1); return; }
-    sec.classList.add('is-animated');
-    chapters.forEach((c, i) => gsap.set(c, { autoAlpha: i === 0 ? 1 : 0 }));
+    let pinST = null;
+    function resetChapters() {
+      current = 0;
+      chapters.forEach((c, i) => {
+        const parts = [c, ...c.querySelectorAll('h3, p')];
+        gsap.killTweensOf(parts);
+        gsap.set(parts, { clearProps: 'all' });
+        c.classList.toggle('is-active', i === 0);
+      });
+      labels.forEach((l) => l.classList.remove('is-on'));
+      caption.textContent = names[0];
+      fill.style.transform = '';
+      if (hint) hint.style.opacity = '';
+    }
+    // calm: no pin, chapters stacked, flower fully open
+    function toStatic() {
+      if (pinST) { pinST.kill(true, true); pinST = null; }
+      resetChapters();
+      tl.progress(1);
+      sec.classList.remove('is-animated');
+      sec.classList.add('is-static');
+    }
+    function toAnimated() {
+      if (pinST) return;
+      sec.classList.remove('is-static');
+      sec.classList.add('is-animated');
+      resetChapters();
+      tl.progress(0);
+      chapters.forEach((c, i) => gsap.set(c, { autoAlpha: i === 0 ? 1 : 0 }));
+      pinST = createPin();
+    }
 
-    ScrollTrigger.create({
+    if (motion()) toAnimated(); else toStatic();
+    return { setCalm: (on) => (on ? toStatic() : toAnimated()) };
+
+    function createPin() { return ScrollTrigger.create({
       trigger: sec,
       pin: q('[data-story-pin]'),
       start: 'top top',
@@ -232,7 +277,7 @@ ready(() => {
         show(idx);
         if (hint) hint.style.opacity = p > .05 ? 0 : 1;
       },
-    });
+    }); }
   }
 
   /* ---------------- cards: tilt + spotlight ---------------- */
@@ -284,18 +329,43 @@ ready(() => {
   navLinks.forEach((a) => { const s = document.querySelector(a.getAttribute('href')); if (s) so.observe(s); });
 
   /* ---------------- calm mode ---------------- */
+  // ADHD-friendly focus mode: still, soft, single column, one next step at a time
   const calmBtn = $('[data-calm-toggle]');
+  const calm = initCalm({ root, onExit: () => setCalmMode(false) });
   calmBtn.setAttribute('aria-pressed', String(isCalm()));
-  calmBtn.addEventListener('click', () => {
-    const on = !isCalm();
+  calm.sync(false);
+  function setCalmMode(on) {
+    // keep the reader on the same content across the layout change
+    const anchor = [...document.querySelectorAll('[data-calm-section]')].reverse()
+      .find((s) => s.getBoundingClientRect().top <= window.innerHeight * 0.38);
     root.toggleAttribute('data-calm', on);
     calmBtn.setAttribute('aria-pressed', String(on));
     try { localStorage.setItem('lotus-calm', on ? '1' : '0'); } catch (e) {}
     aurora && aurora.setCalm(on);
     if (marqueeTween) on ? marqueeTween.pause() : marqueeTween.play();
-    if (on) { heroVideo.pause(); hero.classList.remove('is-still'); $$('[data-video] video').forEach((v) => v.pause()); }
-    else heroVideo.play().catch(() => {});
-    if (on && hasGsap) gsap.globalTimeline.getChildren(true, true, false).forEach((t) => { if (t.scrollTrigger) t.progress(1); });
+    if (on) {
+      heroVideo.pause(); hero.classList.remove('is-still'); header.classList.remove('is-hidden');
+      $$('[data-video] video').forEach((v) => v.pause());
+    } else if (heroVideo.muted) heroVideo.play().catch(() => {});
+    setSoundLabel();
+    setScenesCalm(on);
+    storyCtl && storyCtl.setCalm(on);
+    if (hasGsap) {
+      // scroll reveals (heading lines, quote words): in calm they are parked finished,
+      // so no text is ever hidden or half-faded; out of calm they follow scroll again
+      const parked = new Set(scenes.map((s) => s.t));
+      gsap.globalTimeline.getChildren(true, true, false).forEach((t) => {
+        if (!t.scrollTrigger || parked.has(t)) return;
+        if (on) { t.scrollTrigger.disable(false); t.progress(1); } else t.scrollTrigger.enable();
+      });
+    }
+    if (hasGsap) ScrollTrigger.refresh();
+    if (anchor && window.scrollY > 0) anchor.scrollIntoView({ block: 'start' });
+    calm.sync(true);
+  }
+  calmBtn.addEventListener('click', () => setCalmMode(!isCalm()));
+  document.addEventListener('keydown', (e) => {
+    if (e.altKey && e.shiftKey && e.code === 'KeyS') { e.preventDefault(); setCalmMode(!isCalm()); }
   });
 
   /* ---------------- language switch: flip the coin, then go ---------------- */
