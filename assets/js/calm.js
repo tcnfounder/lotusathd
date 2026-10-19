@@ -6,8 +6,10 @@
    ========================================================= */
 
 export const CALM_PREFS_KEY = 'lotus-calm-prefs';
-const DEFAULTS = { focus: 'on', size: 'm', leading: 'normal', color: 'soft', media: 'show' };
+const PLACE_KEY = 'lotus-calm-place';
+const DEFAULTS = { focus: 'on', size: 'm', leading: 'normal', color: 'soft', media: 'show', return: 'on' };
 const FIELDS = [
+  { k: 'return', label: 'Kaldığın yer', hint: 'Başka sekmeye geçip döndüğünde, dalıp gittiğinde ya da günler sonra geldiğinde nerede kaldığını gösterir. Bilgi bu cihazdan çıkmaz.', choices: [['on', 'Açık'], ['off', 'Kapalı']] },
   { k: 'focus', label: 'Okuma odağı', hint: 'Okuduğun paragraf net kalır, diğerleri soluklaşır.', choices: [['on', 'Açık'], ['off', 'Kapalı']] },
   { k: 'size', label: 'Yazı boyutu', choices: [['m', 'Normal'], ['l', 'Büyük'], ['xl', 'Çok büyük']] },
   { k: 'leading', label: 'Satır aralığı', choices: [['normal', 'Normal'], ['wide', 'Geniş']] },
@@ -133,7 +135,7 @@ export function initCalm({ root, onExit }) {
   ui.next.addEventListener('click', () => {
     const s = sections[currentIdx + 1];
     if (!s) return;
-    s.el.scrollIntoView({ block: 'start' });
+    s.el.scrollIntoView({ block: 'start', behavior: 'instant' });
     if (s.head) {
       s.head.setAttribute('tabindex', '-1');
       s.head.focus({ preventScroll: true });
@@ -175,15 +177,17 @@ export function initCalm({ root, onExit }) {
       ui.next.setAttribute('aria-label', nxt ? `Sonraki bölüm: ${nxt.name}` : 'Sonraki bölüm');
     }
 
-    if (prefs.focus !== 'off' && blocks.length) {
+    if (blocks.length) {
       let best = null, bestD = Infinity;
       for (const b of blocks) {
+        if (b.closest('[inert]')) continue; // kapalı "devamı" metni görünmez
         const br = b.getBoundingClientRect();
         if (!br.height) continue;
         const d = br.top <= line && br.bottom >= line ? 0 : Math.min(Math.abs(br.top - line), Math.abs(br.bottom - line));
         if (d < bestD) { bestD = d; best = b; }
       }
-      setReading(best);
+      if (prefs.focus !== 'off') setReading(best);
+      notePlace(best, cur.name);
     }
   }
   function setReading(n) {
@@ -202,20 +206,175 @@ export function initCalm({ root, onExit }) {
     if (b && b.classList.contains('calm-block')) setReading(b);
   });
 
+  /* =======================================================
+     Kaldığın yer: dikkat dağılınca geri dönüş köprüsü
+     ADHD'de zor olan ayrılmak değil, geri dönüp nerede kaldığını bulmak.
+     Site üç anı fark eder ve tek dokunuşla tam o satıra döndürür:
+     başka sekmeye geçip dönmek, sayfada dalıp gitmek, günler sonra yeniden gelmek.
+     Hiçbir şey sunucuya gitmez; yer yalnızca bu cihazda saklanır.
+     ======================================================= */
+  const AWAY_MIN = 20 * 1000;        // bu kadar kısa ayrılıklar sayılmaz
+  const IDLE_MIN = 3 * 60 * 1000;    // sayfa açıkken hiç hareket yoksa "dalıp gitme"
+  const VISIT_MAX = 14 * 864e5;      // iki haftadan eski ziyaretler hatırlanmaz
+
+  let place = null;                  // { i: blok sırası, t: metin, s: bölüm }
+  let leftAt = 0, lastInput = Date.now(), idleShown = false, placeTimer = 0;
+
+  const card = document.createElement('section');
+  card.className = 'calm-return';
+  card.hidden = true;
+  card.setAttribute('role', 'dialog');
+  card.setAttribute('aria-labelledby', 'calm-return-title');
+  card.innerHTML = `
+    <p class="calm-return-kicker" data-r-kicker></p>
+    <h2 id="calm-return-title" data-r-title></h2>
+    <p class="calm-return-text" data-r-text></p>
+    <blockquote class="calm-return-quote"><span data-r-section></span><p data-r-quote></p></blockquote>
+    <div class="calm-return-actions">
+      <button class="calm-btn calm-btn-main" type="button" data-r-go>Kaldığım yerden devam et</button>
+      <button class="calm-btn" type="button" data-r-close>Kapat</button>
+    </div>`;
+  document.body.append(card);
+  const $r = (s) => card.querySelector(s);
+
+  function snippet(n) {
+    const t = (n.textContent || '').replace(/\s+/g, ' ').trim();
+    return t.length > 110 ? t.slice(0, 108).replace(/\s+\S*$/, '') + '…' : t;
+  }
+  function notePlace(n, sectionName) {
+    if (!n) return;
+    // kısa etiketler ("Su", "Çiçek") yer değildir; bir sonraki gerçek cümleyi al
+    let i = blocks.indexOf(n);
+    const usable = (b) => snippet(b).length >= 15 && !b.closest('[inert]') && b.getBoundingClientRect().height > 0;
+    while (blocks[i + 1] && !usable(blocks[i])) i++;
+    n = blocks[i];
+    const sec = n.closest('[data-calm-section]');
+    if (sec) sectionName = sec.dataset.calmSection;
+    // sayfanın en üstündeyken "yer" kaydetmeye değmez
+    if (i < 1 && window.scrollY < 200) return;
+    if (place && place.i === i) return;
+    place = { i, t: snippet(n), s: sectionName };
+    clearTimeout(placeTimer);
+    placeTimer = setTimeout(savePlace, 600);
+  }
+  function savePlace() {
+    clearTimeout(placeTimer);
+    if (!place || !isOn()) return;
+    try { localStorage.setItem(PLACE_KEY, JSON.stringify({ ...place, at: Date.now() })); } catch (e) {}
+  }
+  window.addEventListener('pagehide', savePlace);
+  function minutesText(ms) {
+    const m = Math.round(ms / 60000);
+    if (m < 1) return 'Bir dakikaya yakın';
+    if (m < 60) return `${m} dakikadır`;
+    const h = Math.floor(m / 60), r = m % 60;
+    return r ? `${h} saat ${r} dakikadır` : `${h} saattir`;
+  }
+  function agoText(ms) {
+    const d = Math.floor(ms / 864e5);
+    if (d < 1) {
+      const h = Math.floor(ms / 36e5);
+      return h < 1 ? 'Biraz önce' : `${h} saat önce`;
+    }
+    return d === 1 ? 'Dün' : `${d} gün önce`;
+  }
+  function showReturn(kind, ms, p) {
+    if (!isOn() || prefs.return === 'off' || !p || !blocks[p.i]) return;
+    const copy = {
+      away: {
+        kicker: `${minutesText(ms)} başka bir yerdeydin`,
+        title: 'Tekrar hoş geldin.',
+        text: 'Bu çok normal. ADHD’de zor olan ayrılmak değil, geri dönüp nerede kaldığını bulmak. O yüzden senin yerine biz hatırladık:',
+      },
+      idle: {
+        kicker: `${minutesText(ms)} sayfa hiç kıpırdamadı`,
+        title: 'Dalıp gitmiş olabilirsin.',
+        text: 'Hiç sorun değil, zihnin biraz gezindi. Kaldığın satır burada:',
+      },
+      visit: {
+        kicker: `${agoText(ms)} buradaydın`,
+        title: 'Geçen sefer burada kalmıştın.',
+        text: 'Baştan okumana gerek yok. İstersen tam bıraktığın yerden devam et:',
+      },
+    }[kind];
+    $r('[data-r-kicker]').textContent = copy.kicker;
+    $r('[data-r-title]').textContent = copy.title;
+    $r('[data-r-text]').textContent = copy.text;
+    $r('[data-r-section]').textContent = p.s || '';
+    $r('[data-r-quote]').textContent = `“${p.t}”`;
+    card.dataset.target = String(p.i);
+    openPanel(false);
+    card.hidden = false;
+    $r('[data-r-go]').focus({ preventScroll: true });
+  }
+  function closeReturn() { card.hidden = true; }
+
+  $r('[data-r-close]').addEventListener('click', () => { closeReturn(); ui.settings.focus({ preventScroll: true }); });
+  $r('[data-r-go]').addEventListener('click', () => {
+    const n = blocks[+card.dataset.target];
+    closeReturn();
+    if (!n) return;
+    n.scrollIntoView({ block: 'center', behavior: 'instant' });
+    blocks.forEach((b) => b.classList.remove('calm-landed'));
+    n.classList.add('calm-landed');
+    setReading(n);
+    n.setAttribute('tabindex', '-1');
+    n.focus({ preventScroll: true });
+    setTimeout(() => n.classList.remove('calm-landed'), 8000);
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !card.hidden) closeReturn(); });
+
+  // 1 · başka sekmeye, uygulamaya geçip dönmek
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { leftAt = Date.now(); savePlace(); return; }
+    const away = leftAt ? Date.now() - leftAt : 0;
+    leftAt = 0;
+    lastInput = Date.now();
+    if (away >= AWAY_MIN && place) showReturn('away', away, place);
+  });
+
+  // 2 · sayfa açıkken dalıp gitmek: uzun süre hiç hareket yoksa, ilk harekette sor
+  const onInput = () => {
+    const idle = Date.now() - lastInput;
+    lastInput = Date.now();
+    if (!document.hidden && idle >= IDLE_MIN && !idleShown && card.hidden && place) {
+      idleShown = true; // bir ziyarette bir kez yeter
+      showReturn('idle', idle, place);
+    }
+  };
+  ['pointermove', 'pointerdown', 'keydown', 'wheel', 'touchstart'].forEach((ev) => window.addEventListener(ev, onInput, { passive: true }));
+  window.addEventListener('scroll', () => { if (card.hidden) onInput(); }, { passive: true });
+
+  // 3 · günler sonra yeniden gelmek
+  function offerLastVisit() {
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem(PLACE_KEY) || 'null'); } catch (e) {}
+    if (!saved || !saved.at || !blocks[saved.i]) return;
+    const ago = Date.now() - saved.at;
+    if (ago < 30 * 60 * 1000 || ago > VISIT_MAX) return; // aynı oturum ya da çok eski
+    if (window.scrollY > 300) return; // tarayıcı zaten oraya götürdüyse sorma
+    // metin değiştiyse yanlış yere götürme
+    if (snippet(blocks[saved.i]) !== saved.t) return;
+    showReturn('visit', ago, saved);
+  }
+
   window.addEventListener('scroll', requestUpdate, { passive: true });
   window.addEventListener('resize', requestUpdate);
 
   applyPrefs();
+  let visitChecked = false;
 
   return {
     /* sakin mod açıldığında ya da kapandığında çağrılır */
     sync(announce) {
       if (isOn()) {
         lastText = '';
+        if (!visitChecked) { visitChecked = true; offerLastVisit(); }
         update();
         if (announce) ui.live.textContent = 'Sakin mod açık. Hareket durdu, sayfa tek kolona indi. Ayarlar ekranın altında.';
       } else {
         openPanel(false);
+        closeReturn();
         setReading(null);
         if (announce) ui.live.textContent = '';
       }
